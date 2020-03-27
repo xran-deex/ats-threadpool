@@ -21,4 +21,3 @@ ATS_COMPILE (TEST_SRC
 	src/DATS/threadpool.dats
 	)
 ADD_LIBRARY(ats-threadpool ${TEST_SRC})
-target_link_libraries(ats-threadpool ats-channel ats-shared-vt pthread)
