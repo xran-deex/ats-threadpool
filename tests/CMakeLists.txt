@@ -1,6 +1,8 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 3.10)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
 add_subdirectory(.. build)
+add_subdirectory(../node_modules/shared_vt shared_vt)
+add_subdirectory(../node_modules/ats-channel ats-channel)
 PROJECT (ATSAPP C)
 FIND_PACKAGE (ATS REQUIRED)
 IF (NOT ATS_FOUND)
@@ -13,4 +15,4 @@ ATS_COMPILE (TEST_SRC
 	main.dats
 )
 ADD_EXECUTABLE (main ${TEST_SRC})
-target_link_libraries(main ats-channel ats-shared-vt pthread ats-threadpool atslib)
+target_link_libraries(main ats-threadpool)
