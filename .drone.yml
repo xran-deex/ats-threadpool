@@ -1,0 +1,15 @@
+kind: pipeline
+name: default
+
+steps:
+- name: build
+  image: ubuntu-netfu:5000/ats:0.4.0-npm-cmake
+  commands:
+  - npm install
+  - cd tests
+  - npm install
+  - mkdir build
+  - cd build
+  - cmake ..
+  - cmake --build .
+  - ./tests
