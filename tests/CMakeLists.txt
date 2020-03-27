@@ -1,0 +1,16 @@
+CMAKE_MINIMUM_REQUIRED (VERSION 3.10)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
+add_subdirectory(.. build)
+PROJECT (ATSAPP C)
+FIND_PACKAGE (ATS REQUIRED)
+IF (NOT ATS_FOUND)
+	MESSAGE (FATAL_ERROR ”ATS Not Found!”)
+ENDIF ()
+ATS_INCLUDE(.)
+ATS_INCLUDE(../node_modules)
+set(CMAKE_C_FLAGS "-DATS_MEMALLOC_LIBC -D_DEFAULT_SOURCE")
+ATS_COMPILE (TEST_SRC
+	main.dats
+)
+ADD_EXECUTABLE (main ${TEST_SRC})
+target_link_libraries(main ats-channel ats-shared-vt pthread ats-threadpool atslib)

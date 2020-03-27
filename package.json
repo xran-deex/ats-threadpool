@@ -1,0 +1,19 @@
+{
+  "name": "ats-threadpool",
+  "version": "1.0.0",
+  "description": "a threadpool implemented in ATS2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://ubuntu-netfu.lan:3000/randy.valis/ats-threadpool.git"
+  },
+  "author": "Randy Valis",
+  "license": "ISC",
+  "dependencies": {
+    "ats-channel": "git+http://ubuntu-netfu.lan:3000/randy.valis/ats-channel.git",
+    "shared_vt": "git+http://ubuntu-netfu.lan:3000/randy.valis/shared_vt.git"
+  }
+}

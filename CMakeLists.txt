@@ -1,0 +1,28 @@
+CMAKE_MINIMUM_REQUIRED (VERSION 3.10)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+PROJECT (ATSAPP C)
+IF(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/node_modules)
+	EXECUTE_PROCESS (
+		COMMAND npm install
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	)
+ENDIF()
+IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/node_modules)
+    add_subdirectory(node_modules/ats-channel ats-channel)
+    add_subdirectory(node_modules/shared_vt ats-shared-vt)
+ENDIF()
+FIND_PACKAGE (ATS REQUIRED)
+IF (NOT ATS_FOUND)
+	MESSAGE (FATAL_ERROR ”ATS Not Found!”)
+ENDIF ()
+ATS_INCLUDE (src/SATS src/DATS src/HATS)
+IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/node_modules)
+    ATS_INCLUDE(node_modules)
+ENDIF()
+set(CMAKE_C_FLAGS "-DATS_MEMALLOC_LIBC -D_DEFAULT_SOURCE")
+ATS_COMPILE (TEST_SRC
+	src/SATS/threadpool.sats
+	src/DATS/threadpool.dats
+	)
+ADD_LIBRARY(ats-threadpool ${TEST_SRC})
+target_link_libraries(ats-threadpool ats-channel ats-shared-vt pthread)

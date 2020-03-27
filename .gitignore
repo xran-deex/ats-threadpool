@@ -1,0 +1,3 @@
+build
+*.c
+node_modules
