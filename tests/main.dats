@@ -25,6 +25,7 @@ implement main(argc, argv) = 0 where {
 
     fun loop(p: !pool(int), i: int): void = () where {
         val () = add_work(p, lam () => println!("!!!"))
+        val () = add_work2(p, llam () => println!("CLOPTR: ", i))
         val () = add_work_witharg(p, task1, 1)
         val () = add_work_witharg(p, task2, 3)
         val () = if(i = 1) then () else loop(p, i-1)

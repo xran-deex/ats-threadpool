@@ -1,5 +1,4 @@
 #include "./../HATS/includes.hats"
-// #include "{$PATSHOMELOCS}/shared/src/DATS/shared_vt.dats"
 staload "./../SATS/threadpool.sats"
 
 #define ATS_DYNLOADFLAG 0
@@ -12,10 +11,12 @@ staload "./../SATS/threadpool.sats"
 
 vtypedef func1(a:t@ype) = @{ func=a -<fun1> void, arg=a }
 vtypedef func2 = @{ func=() -<fun1> void }
+vtypedef func3 = @{ func=() -<lincloptr1> void }
 
 datavtype func(a:t@ype) = 
 | FUNC1 (a) of func1(a)
 | FUNC2 of func2
+| FUNC3 of func3
 
 datavtype pool_(a:t@ype) = 
 | {l1,l2,l3,l4,l5: agz} 
@@ -94,6 +95,7 @@ implement {a} pool_destroy(pool) =
                 val () = case+ f of
                         | ~FUNC1(_) => ()
                         | ~FUNC2(_) => ()
+                        | ~FUNC3(f) => cloptr_free($UNSAFE.castvwtp0{cloptr(void)}(f.func))
                 val () = fold@(pool)
                 val () = drain(pool, i - 1)
             }
@@ -117,30 +119,6 @@ implement {a} pool_destroy(pool) =
 
 implement {a} make_pool(sz) = p where {
   val () = assertloc(sz > 0)
-  (* extern *)
-  (* praxi assert_agz() : [l:agz] void *)
-  
-  (* prval [l1:addr]() = assert_agz() *)
-  (* prval [l2:addr]() = assert_agz() *)
-  (* prval [l3:addr]() = assert_agz() *)
-  (* prval [l4:addr]() = assert_agz() *)
-  (* prval [l5:addr]() = assert_agz() *)
-  (* val pool = POOL{l1,l2,l3,l4,l5}(_) *)
-  (* val+ POOL(p) = pool *)
-  (* val () = p.size := sz *)
-  (* val () = p.running := true *)
-  (* val () = p.num_working := 0 *)
-  (* val () = p.num_alive := 0 *)
-  (* val () = p.threads := list_vt_nil() *)
-  (* val () = p.refcount := shared_make($UNSAFE.int2ptr(1)) *)
-  (* val () = p.has_work := false *)
-  (* val () = p.has_work_cv := unsafe_condvar_t2vt(condvar_create_exn()) *)
-  (* val () = p.has_work_mutex := unsafe_mutex_t2vt(mutex_create_exn()) *)
-  (* val () = p.thread_count_cv := unsafe_condvar_t2vt(condvar_create_exn()) *)
-  (* val () = p.thread_count_mutex := unsafe_mutex_t2vt(mutex_create_exn()) *)
-  (* val () = p.queue_mutex := unsafe_mutex_t2vt(mutex_create_exn()) *)
-  (* val () = p.queue := lindeque_nil() *)
-  (* val () = fold@(pool) *)
   val p = POOL(@{
       size = sz,
       running = true,
@@ -274,6 +252,7 @@ fun {a:t@ype} work_loop(pool: !pool(a)): void = () where {
             val () = case+ work of
                      | ~FUNC1 w => w.func(w.arg)
                      | ~FUNC2 w => w.func()
+                     | ~FUNC3 w => (w.func(); cloptr_free($UNSAFE.castvwtp0{cloptr(void)}(w.func)))
             val (pf|()) = mutex_lock(unsafe_mutex_vt2t(p.thread_count_mutex))
             val () = p.num_working := p.num_working - 1
             val () = mutex_unlock(pf | unsafe_mutex_vt2t(p.thread_count_mutex))
@@ -337,6 +316,8 @@ fn {a:t@ype} add_work_helper(p: !pool(a), f: func(a)): void = () where {
 }
 
 implement {a} add_work(p, f) = add_work_helper(p, FUNC2(@{func=f}))
+
+implement {a} add_work2(p, f) = add_work_helper(p, FUNC3(@{func=f}))
 
 implement {a} add_work_witharg(p, f, x) = add_work_helper(p, FUNC1(@{func=f, arg=x}))
 
