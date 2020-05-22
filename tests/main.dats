@@ -9,9 +9,10 @@ fn task1(x:int): void = () where {
     val _ = usleep(5000)
     val () = println!("Thread ", athread_self(), " working on task1: ", x)
 }
-fn task2(x:int): void = () where {
+fn task2(x:strptr): void = () where {
     val _ = usleep(5000)
     val () = println!("Thread ", athread_self(), " working on task2: ", x)
+    val () = free(x)
 }
 
 implement main(argc, argv) = 0 where {
@@ -20,14 +21,14 @@ implement main(argc, argv) = 0 where {
             | 2 => println!("ARGS: ", argv[1])
             | _ => ()
 
-    val p = make_pool<int>(5)
+    val p = make_pool(100)
     val () = init_pool(p)
 
-    fun loop(p: !pool(int), i: int): void = () where {
-        val () = add_work(p, lam () => println!("!!!"))
-        val () = add_work2(p, llam () => println!("CLOPTR: ", i))
-        val () = add_work_witharg(p, task1, 1)
-        val () = add_work_witharg(p, task2, 3)
+    fun loop(p: !Pool, i: int): void = () where {
+        val () = add_work(p, llam () => println!("CLOPTR: ", i))
+        val x = copy("3")
+        val () = add_work(p, llam () => task1(1))
+        val () = add_work(p, llam () => task2(x))
         val () = if(i = 1) then () else loop(p, i-1)
     }
     val () = loop(p, 20)

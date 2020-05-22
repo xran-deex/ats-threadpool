@@ -17,7 +17,8 @@ IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/node_modules)
 ENDIF()
 set(CMAKE_C_FLAGS "-DATS_MEMALLOC_LIBC -D_DEFAULT_SOURCE")
 ATS_COMPILE (TEST_SRC
-	src/SATS/threadpool.sats
+	# src/SATS/threadpool.sats
+	src/DATS/concurrent_queue.dats
 	src/DATS/threadpool.dats
 	)
 ADD_LIBRARY(ats-threadpool ${TEST_SRC})
