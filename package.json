@@ -13,7 +13,7 @@
   "author": "Randy Valis",
   "license": "ISC",
   "dependencies": {
-    "ats-channel": "git+https://github.com/xran-deex/ats-channel.git",
-    "ats-shared-vt": "git+https://github.com/xran-deex/ats-shared-vt.git"
+    "ats-channel": "git+https://github.com/xran-deex/ats-channel.git#v0.1.0",
+    "ats-shared-vt": "git+https://github.com/xran-deex/ats-shared-vt.git#v0.1.0"
   }
 }
