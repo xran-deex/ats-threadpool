@@ -1,4 +1,4 @@
-[![Build Status](http://ubuntu-netfu.lan:4000/api/badges/randy.valis/ats-threadpool/status.svg)](http://ubuntu-netfu.lan:4000/randy.valis/ats-threadpool)
+[![Build Status](https://cloud.drone.io/api/badges/xran-deex/ats-threadpool/status.svg)](https://cloud.drone.io/xran-deex/ats-threadpool)
 
 # ats-threadpool
 
