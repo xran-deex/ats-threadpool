@@ -14,6 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "ats-channel": "git+https://github.com/xran-deex/ats-channel.git#v0.1.0",
-    "shared_vt": "git+https://github.com/xran-deex/ats-shared-vt.git#v0.1.0"
+    "ats-shared-vt": "git+https://github.com/xran-deex/ats-shared-vt.git#v0.1.1"
   }
 }
