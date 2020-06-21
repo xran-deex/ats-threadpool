@@ -5,4 +5,5 @@ steps:
 - name: build
   image: xrandeex/ats2:0.4.0
   commands:
-  - make test
+  - npm install
+  - ls node_modules
