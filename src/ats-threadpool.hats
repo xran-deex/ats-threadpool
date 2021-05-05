@@ -7,8 +7,8 @@ staload _ = "libats/DATS/athread.dats"
 staload _ = "libats/DATS/deqarray.dats"
 staload _ = "libats/DATS/athread_posix.dats"
 
-#staload
-POOL = "./src/SATS/threadpool.sats"
+staload POOL = "./SATS/threadpool.sats"
 
-#staload
-_  = "./src/DATS/threadpool.dats"
+staload _  = "./DATS/threadpool.dats"
+#include "ats-channel.hats"
+#include "ats-shared-vt.hats"

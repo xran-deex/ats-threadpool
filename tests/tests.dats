@@ -1,4 +1,4 @@
-#include "./../ats-threadpool.hats"
+#include "ats-threadpool.hats"
 staload "libats/SATS/athread.sats"
 
 staload $POOL

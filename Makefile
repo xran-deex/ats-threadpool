@@ -1,67 +1,54 @@
 ATSCC=$(PATSHOME)/bin/patscc
 ATSOPT=$(PATSHOME)/bin/patsopt
 
-ATSFLAGS=-IATS node_modules
+ATSFLAGS+=-IATS src
 
-CFLAGS=-DATS_MEMALLOC_LIBC -D_DEFAULT_SOURCE -I $(PATSHOME)/ccomp/runtime -I $(PATSHOME) -O3
-LIBS=-L $(PATSHOME)/ccomp/atslib/lib -latslib
+CFLAGS+=-DATS_MEMALLOC_LIBC -D_DEFAULT_SOURCE -I $(PATSHOME)/ccomp/runtime -I $(PATSHOME) -O2 -I src
+LDFLAGS+=-L $(PATSHOME)/ccomp/atslib/lib
+LIBS+=-latslib
 
-APP     = libats-threadpool.a
-ifndef STATICLIB
-	CFLAGS+=-fpic
-	LIBS+=-shared
-	APP     = libats-threadpool.so
-endif
-
-EXEDIR  = target
-ifdef OUTDIR
-	EXEDIR = $(OUTDIR)
-endif
-SRCDIR  = src
-OBJDIR  = .build
+NAME := libats-threadpool
+SNAME   :=  $(NAME).a
+DNAME   :=  $(NAME).so
+SRCDIR  := src
 vpath %.dats src
 vpath %.dats src/DATS
 vpath %.sats src/SATS
-dir_guard=@mkdir -p $(@D)
 SRCS    := $(shell find $(SRCDIR) -name '*.dats' -type f -exec basename {} \;)
-OBJS    := $(patsubst %.dats,$(OBJDIR)/%.o,$(SRCS))
+SDIR    :=  build-static
+SOBJ    := $(patsubst %.dats,$(SDIR)/%.o,$(SRCS))
+DDIR    :=  build-shared
+DOBJ    := $(patsubst %.dats,$(DDIR)/%.o,$(SRCS))
 
-.PHONY: clean setup
+.PHONY: all clean fclean re 
 
-all: $(EXEDIR)/$(APP)
+all: $(SNAME) $(DNAME)
 
-$(EXEDIR)/$(APP): $(OBJS)
-	$(dir_guard)
-ifdef STATICLIB
-	ar rcs $@ $(OBJS)
-endif
-ifndef STATICLIB
-	$(CC) $(CFLAGS) -o $(EXEDIR)/$(APP) $(OBJS) $(LIBS)
-endif
+$(SNAME): $(SOBJ)
+	$(AR) $(ARFLAGS) $@ $^
 
-.SECONDEXPANSION:
-$(OBJDIR)/%.o: %.c
-	$(dir_guard)
-	$(CC) $(CFLAGS) -c $< -o $(OBJDIR)/$(@F)
+$(DNAME): CFLAGS += -fPIC
+$(DNAME): LDFLAGS += -shared
+$(DNAME): $(DOBJ)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-$(OBJDIR)/%.c: %.dats node_modules
-	$(dir_guard)
-	$(ATSOPT) $(ATSFLAGS) -o $(OBJDIR)/$(@F) -d $<
+$(SDIR)/%.o: %.c | $(SDIR)
+	$(CC) $(CFLAGS) -o $@ -c $< $(LDFLAGS) $(LIBS)
 
-RMF=rm -f
+$(DDIR)/%.o: %.c | $(DDIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
 
-clean: 
-	$(RMF) $(EXEDIR)/$(APP)
-	$(RMF) $(OBJS)
-	+make -C tests clean
-	+make -C node_modules/ats-shared-vt clean
+%.c: %.dats
+	$(ATSOPT) $(ATSFLAGS) -o $(@F) -d $<
 
-node_modules:
-	npm install
+$(SDIR) $(DDIR):
+	@mkdir $@
 
-buildall: all
-	+make -C node_modules/ats-shared-vt
-	+make -C tests
+clean:
+	$(RM) -r $(SDIR) $(DDIR)
 
-test: buildall
-	+make -C tests run
+fclean: clean
+	$(RM) $(SNAME) $(DNAME)
+
+re: fclean all
+

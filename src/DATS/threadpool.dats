@@ -1,6 +1,8 @@
 #include "./../HATS/includes.hats"
 staload "./../SATS/threadpool.sats"
 
+staload $SHARED
+
 #define ATS_DYNLOADFLAG 0
 
 #define DEBUG false
@@ -28,7 +30,7 @@ datavtype Pool_ =
 
 assume Pool = Pool_
 
-implement {} pool_ref(pool) =
+implement pool_ref(pool) =
   let
     val+ @POOL(p) = pool
     val (pf | s) = shared_lock(p.refcount)
@@ -40,7 +42,7 @@ implement {} pool_ref(pool) =
     $UNSAFE.castvwtp1{Pool}(pool)
   end
 
-implement {} pool_unref(pool) =
+implement pool_unref(pool) =
   let
     val+ @POOL(p) = pool
     val (pf | s) = shared_lock(p.refcount)
@@ -65,7 +67,7 @@ implement {} pool_unref(pool) =
       end
   end
 
-implement {} pool_destroy(pool) =
+implement pool_destroy(pool) =
   let
     val @POOL(p) = pool
     val (pf | s) = shared_lock(p.refcount)
@@ -88,7 +90,7 @@ implement {} pool_destroy(pool) =
       end
   end
 
-implement {} make_pool(sz) = p where {
+implement make_pool(sz) = p where {
   val () = assertloc(sz > 0)
   val p = POOL(@{
       thread_cnt = sz,
@@ -104,7 +106,7 @@ implement {} make_pool(sz) = p where {
   })
 }
 
-fn {} queue_has_work(pool: !Pool): Option_vt(work) = res where {
+fn queue_has_work(pool: !Pool): Option_vt(work) = res where {
     val+ @POOL(p) = pool
     val len = lindeque_length(p.queue)
     val () = if(DEBUG) then println!("queue length: ", len)
@@ -125,7 +127,7 @@ fn {} queue_has_work(pool: !Pool): Option_vt(work) = res where {
     val () = fold@(pool)
 }
 
-fun {} wait_loop{l:agz}(pf: !locked_v(l) | pool: !Pool, mutex: !mutex(l)): void = () where {
+fun wait_loop{l:agz}(pf: !locked_v(l) | pool: !Pool, mutex: !mutex(l)): void = () where {
   val+POOL(p) = pool
   val len = lindeque_length(p.queue)
   val () = if(p.running && len = 0) then {
@@ -136,7 +138,7 @@ fun {} wait_loop{l:agz}(pf: !locked_v(l) | pool: !Pool, mutex: !mutex(l)): void 
   }
 }
 
-fun {} done_wait(pool: !Pool): void = () where {
+fun done_wait(pool: !Pool): void = () where {
   val+ @POOL(p) = pool
   val mutex = unsafe_mutex_vt2t(p.work_mutex)
   val (pf|()) = mutex_lock(mutex)
@@ -158,7 +160,7 @@ fun {} done_wait(pool: !Pool): void = () where {
   val () = mutex_unlock(pf | mutex)
 }
 
-fun{} work_loop(pool: !Pool): void = () where {
+fun work_loop(pool: !Pool): void = () where {
   val+@POOL(p) = pool
   val mutex = unsafe_mutex_vt2t(p.work_mutex)
   val running = p.running
@@ -202,7 +204,7 @@ fun{} work_loop(pool: !Pool): void = () where {
     }       
 }
 
-fn{} increment_alive(pool: !Pool): void = {
+fn increment_alive(pool: !Pool): void = {
   val+ @POOL(p) = pool
   val (pf|()) = mutex_lock(unsafe_mutex_vt2t(p.work_mutex))
   val () = p.alive_cnt := p.alive_cnt + 1
@@ -211,7 +213,7 @@ fn{} increment_alive(pool: !Pool): void = {
   val () = fold@(pool)
 }
 
-fn{} signal_done(pool: !Pool): void = {
+fn signal_done(pool: !Pool): void = {
   val+ @POOL(p) = pool
   val (pf|()) = mutex_lock(unsafe_mutex_vt2t(p.work_mutex))
   val () = p.alive_cnt := p.alive_cnt - 1
@@ -222,7 +224,7 @@ fn{} signal_done(pool: !Pool): void = {
   val () = fold@(pool)
 }
 
-fun {} create_threads(pool: !Pool, i: int): void = () where {
+fun create_threads(pool: !Pool, i: int): void = () where {
     val p1 = pool_ref(pool)
     val _ = athread_create_cloptr_exn(llam() =<cloptr1> () where {
       val () = if(DEBUG) then println!("creating thread: ", athread_self())
@@ -239,13 +241,13 @@ fun {} create_threads(pool: !Pool, i: int): void = () where {
     // val () = ready_wait(pool)
   }
 
-implement {} init_pool(pool) = () where {
+implement init_pool(pool) = () where {
   val+ POOL(p) = pool
   val sz = p.thread_cnt
   val () = create_threads(pool, sz)
 }
 
-fn {} add_work_helper(p: !Pool, f: work): void = () where {
+fn add_work_helper(p: !Pool, f: work): void = () where {
   val+ @POOL(pool) = p
   val (pf|()) = mutex_lock(unsafe_mutex_vt2t(pool.work_mutex))
   val () = lindeque_insert_atbeg(pool.queue, f)
@@ -254,9 +256,9 @@ fn {} add_work_helper(p: !Pool, f: work): void = () where {
   prval() = fold@(p)
 }
 
-implement {} add_work(p, f) = add_work_helper(p, f)
+implement add_work(p, f) = add_work_helper(p, f)
 
-fun{} drain{l:agz}(pf: !locked_v(l) | pool: !Pool, i: int, mutex: !mutex(l)): void = () where {
+fun drain{l:agz}(pf: !locked_v(l) | pool: !Pool, i: int, mutex: !mutex(l)): void = () where {
       val @POOL(p) = pool
       val () = if(i = 0) then {
           prval() = fold@(pool)
@@ -270,7 +272,7 @@ fun{} drain{l:agz}(pf: !locked_v(l) | pool: !Pool, i: int, mutex: !mutex(l)): vo
       }
   }
 
-implement {} stop_pool(pool) = () where {
+implement stop_pool(pool) = () where {
   val+@POOL(p) = pool
   val mutex = unsafe_mutex_vt2t(p.work_mutex)
   val (pf|()) = mutex_lock(mutex)
