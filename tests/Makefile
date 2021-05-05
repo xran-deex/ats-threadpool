@@ -5,7 +5,7 @@ ATSFLAGS+=
 
 CFLAGS+=-DATS_MEMALLOC_LIBC -D_DEFAULT_SOURCE -I $(PATSHOME)/ccomp/runtime -I $(PATSHOME) -O2 -I src
 LDFLAGS+=-L $(PATSHOME)/ccomp/atslib/lib
-LIBS=-latslib -lats-shared-vt -lats-threadpool
+LIBS+=-latslib -lpthread
 
 NAME := tests
 SRCDIR  := 
