@@ -1,5 +1,3 @@
--include build/conanbuildinfo.mak
-$(call CONAN_BASIC_SETUP)
 ATSCC=$(PATSHOME)/bin/patscc
 ATSOPT=$(PATSHOME)/bin/patsopt
 
