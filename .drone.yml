@@ -3,6 +3,16 @@ name: default
 
 steps:
 - name: build
-  image: xrandeex/ats2:0.4.0
+  image: xrandeex/ats2:0.4.2
   commands:
-  - STATICLIB=1 make test
+    - conan remote add pkg https://pkg.us.to
+    - conan install . -if build
+    - conan build . -if build
+- name: test
+  image: xrandeex/ats2:0.4.2
+  commands:
+    - conan remote add pkg https://pkg.us.to
+    - cd tests
+    - conan install . -if build
+    - conan build . -if build
+    - ./tests
